@@ -33,7 +33,31 @@ function checksCreateTodosUserAvailability(request, response, next) {
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const isValidUser = users.find((user) => user.username === username);
+  const isValidUUID = validate(id);
+
+  if (!isValidUser) {
+    return response.status(404).json({ error: "User not found" });
+  }
+
+  if (!isValidUUID) {
+    return response.status(400).json({ error: "invalid uuid" });
+  }
+
+  const belongsToUser = isValidUser.todos.find((todo) => todo.id === id);
+
+  if (!belongsToUser) {
+    return response
+      .status(404)
+      .json({ error: "This Todo is not belongs to the user." });
+  }
+
+  request.todo = belongsToUser;
+  request.user = isValidUser;
+  next();
 }
 
 function findUserById(request, response, next) {
